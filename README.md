@@ -51,7 +51,7 @@ My task was to develop a command-line application that allows users to interact 
 To accomplish this, I used technologies such as Node.js, MySQL, and Inquirer.js. I had to ensure that the application could retrieve and manipulate data from the MySQL database using queries, and present that data in a readable format to users. Additionally, I had to prompt users for input using Inquirer.js and update the database based on their input.
 
 ## Installation:
--Download and clone my repo through Github via https://github.com/nguyet33/Home-Wherever-LLC-SQL 
+-Download and clone my repo through Github via https://github.com/nguyet33/Home-Wherever-LLC-SQL  
 -OR you can launch the live application at: NO LIVE APPLICATION FOR THIS PROJECT!!!
 
 ## Usage:
