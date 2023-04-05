@@ -18,6 +18,8 @@
   "homepage": "https://github.com/nguyet33/Home-Wherever-LLC-SQL#readme",
   "dependencies": {
     "inquirer": "^8.2.4",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.2.0",
     "nodemon": "^2.0.22"
   }
 }
