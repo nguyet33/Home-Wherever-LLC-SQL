@@ -248,7 +248,6 @@ function addEmployee() {
             );
           });
         } else {
-          // Insert the new employee into the database with no manager
           const query =
             "INSERT INTO employee (first_name, last_name, role_id) VALUES (?, ?, ?)";
           connection.query(
@@ -268,8 +267,40 @@ function addEmployee() {
 }
 
 function updateEmployeeRole() {
-  // code to update an employee's role
-  userPrompt();
-}
-
+    // First, retrieve all employee names and their ids
+    connection.query("SELECT id, first_name, last_name FROM employee", (err, employees) => {
+      if (err) throw err;
+  
+      // Prompt the user to select an employee to update
+      inquirer
+        .prompt([
+          {
+            name: "employeeId",
+            type: "list",
+            message: "Which employee's role do you want to update?",
+            choices: employees.map((employee) => ({
+              name: `${employee.first_name} ${employee.last_name}`,
+              value: employee.id,
+            })),
+          },
+          {
+            name: "newRoleId",
+            type: "number",
+            message: "Enter the new role ID:",
+          },
+        ])
+        .then((answer) => {
+          connection.query(
+            "UPDATE employee SET role_id = ? WHERE id = ?",
+            [answer.newRoleId, answer.employeeId],
+            (err, result) => {
+              if (err) throw err;
+              console.log(`Employee role updated successfully!`);
+              userPrompt();
+            }
+          );
+        });
+    });
+  }
+  
 userPrompt();
