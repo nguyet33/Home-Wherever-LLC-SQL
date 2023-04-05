@@ -82,18 +82,189 @@ function viewAllEmployees() {
 }
 
 function addDepartment() {
-  // code to add a department
-  userPrompt();
+  inquirer
+    .prompt({
+      name: "departmentName",
+      type: "input",
+      message: "Enter the name of the new department:",
+    })
+    .then((answer) => {
+      connection.query(
+        "INSERT INTO department (name) VALUES (?)",
+        [answer.departmentName],
+        (err, result) => {
+          if (err) {
+            console.error(err.message);
+          } else {
+            console.log(
+              `New department "${answer.departmentName}" added successfully!`
+            );
+          }
+          userPrompt();
+        }
+      );
+    });
 }
 
 function addRole() {
-  // code to add a role
-  userPrompt();
-}
+    // Prompt the user to enter the new role details
+    inquirer
+      .prompt([
+        {
+          name: "title",
+          type: "input",
+          message: "Enter the title of the new role:",
+        },
+        {
+          name: "salary",
+          type: "input",
+          message: "Enter the salary of the new role:",
+        },
+        {
+          name: "department",
+          type: "list",
+          message: "Select the department for the new role:",
+          choices: async function () {
+            // Query the departments from the database and return them as choices
+            const departments = await getDepartments();
+            return departments.map((department) => ({
+              name: department.name,
+              value: department.id,
+            }));
+          },
+        },
+      ])
+      .then((answer) => {
+        // Insert the new role into the database
+        connection.query(
+          "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+          [answer.title, answer.salary, answer.department],
+          (err, result) => {
+            if (err) throw err;
+            console.log(
+              `New role "${answer.title}" added successfully!`
+            );
+            // Prompt the user to choose another action
+            userPrompt();
+          }
+        );
+      });
+  }
+  
+
+  function getDepartments() {
+    return new Promise((resolve, reject) => {
+      connection.query("SELECT * FROM department", (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
 
 function addEmployee() {
-  // code to add an employee
-  userPrompt();
+  inquirer
+    .prompt([
+      {
+        name: "firstName",
+        type: "input",
+        message: "Enter the employee's first name:",
+      },
+      {
+        name: "lastName",
+        type: "input",
+        message: "Enter the employee's last name:",
+      },
+      {
+        name: "role",
+        type: "list",
+        message: "Choose the employee's role:",
+        choices: function () {
+          // Retrieve roles from the database
+          return new Promise((resolve, reject) => {
+            connection.query("SELECT * FROM role", (err, results) => {
+              if (err) reject(err);
+              // Map the results to an array of role titles
+              const roles = results.map((role) => role.title);
+              resolve(roles);
+            });
+          });
+        },
+      },
+      {
+        name: "manager",
+        type: "list",
+        message: "Choose the employee's manager:",
+        choices: function () {
+          // Retrieve employees from the database
+          return new Promise((resolve, reject) => {
+            connection.query("SELECT * FROM employee", (err, results) => {
+              if (err) reject(err);
+              // Map the results to an array of employee names
+              const managers = results.map(
+                (employee) => `${employee.first_name} ${employee.last_name}`
+              );
+              // Add an option for no manager
+              managers.unshift("None");
+              resolve(managers);
+            });
+          });
+        },
+      },
+    ])
+    .then((answers) => {
+      // Retrieve the selected role ID from the database
+      const query = "SELECT id FROM role WHERE title = ?";
+      connection.query(query, [answers.role], (err, results) => {
+        if (err) throw err;
+        const roleId = results[0].id;
+
+        // Retrieve the selected manager ID from the database
+        let managerId = null;
+        if (answers.manager !== "None") {
+          const [firstName, lastName] = answers.manager.split(" ");
+          const query =
+            "SELECT id FROM employee WHERE first_name = ? AND last_name = ?";
+          connection.query(query, [firstName, lastName], (err, results) => {
+            if (err) throw err;
+            managerId = results[0].id;
+
+            // Insert the new employee into the database
+            const query =
+              "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
+            connection.query(
+              query,
+              [answers.firstName, answers.lastName, roleId, managerId],
+              (err, results) => {
+                if (err) throw err;
+                console.log(
+                  `${answers.firstName} ${answers.lastName} added to the database.`
+                );
+                userPrompt();
+              }
+            );
+          });
+        } else {
+          // Insert the new employee into the database with no manager
+          const query =
+            "INSERT INTO employee (first_name, last_name, role_id) VALUES (?, ?, ?)";
+          connection.query(
+            query,
+            [answers.firstName, answers.lastName, roleId],
+            (err, results) => {
+              if (err) throw err;
+              console.log(
+                `${answers.firstName} ${answers.lastName} added to the database.`
+              );
+              userPrompt();
+            }
+          );
+        }
+      });
+    });
 }
 
 function updateEmployeeRole() {
