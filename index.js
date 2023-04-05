@@ -5,13 +5,13 @@ const connection = mysql.createConnection({
   port: 3306,
   user: "root",
   password: "password",
-  database: "employee_db",
+  database: "homewherever_db",
 });
 
 const inquirer = require("inquirer");
 
-inquirer
-  .prompt({
+async function userPrompt() {
+  const { action } = await inquirer.prompt({
     name: "action",
     type: "list",
     message: "What would you like to do?",
@@ -23,56 +23,82 @@ inquirer
       "Add a role",
       "Add an employee",
       "Update an employee role",
+      "Quit",
     ],
-  })
-  .then((answer) => {
-    // Perform action based on user's choice
-    switch (answer.action) {
-        case "View all departments":
-          viewAllDepartments();
-          break;
-        case "View all roles":
-          viewAllRoles();
-          break;
-        case "View all employees":
-          viewAllEmployees();
-          break;
-        case "Add a department":
-          addDepartment();
-          break;
-        case "Add a role":
-          addRole();
-          break;
-        case "Add an employee":
-          addEmployee();
-          break;
-        case "Update an employee role":
-          updateEmployeeRole();
-          break;
-      }
   });
 
+  switch (action) {
+    case "View all departments":
+      viewAllDepartments();
+      break;
+    case "View all roles":
+      viewAllRoles();
+      break;
+    case "View all employees":
+      viewAllEmployees();
+      break;
+    case "Add a department":
+      addDepartment();
+      break;
+    case "Add a role":
+      addRole();
+      break;
+    case "Add an employee":
+      addEmployee();
+      break;
+    case "Update an employee role":
+      updateEmployeeRole();
+      break;
+    case "Quit":
+      process.exit();
+    default:
+      console.log(`Invalid action: ${action}`);
+      userPrompt();
+  }
+}
+
 function viewAllDepartments() {
-  connection.query("SELECT * FROM departments", (err, results) => {
+  connection.query("SELECT * FROM department", (err, results) => {
     if (err) throw err;
     console.table(results);
-    // Prompt the user to choose another action
+    userPrompt();
   });
 }
 
 function viewAllRoles() {
-  connection.query("SELECT * FROM roles", (err, results) => {
+  connection.query("SELECT * FROM role", (err, results) => {
     if (err) throw err;
     console.table(results);
-    // Prompt the user to choose another action
+    userPrompt();
   });
 }
 
 function viewAllEmployees() {
-  connection.query("SELECT * FROM employees", (err, results) => {
+  connection.query("SELECT * FROM employee", (err, results) => {
     if (err) throw err;
     console.table(results);
-    // Prompt the user to choose another action
+    userPrompt();
   });
 }
 
+function addDepartment() {
+  // code to add a department
+  userPrompt();
+}
+
+function addRole() {
+  // code to add a role
+  userPrompt();
+}
+
+function addEmployee() {
+  // code to add an employee
+  userPrompt();
+}
+
+function updateEmployeeRole() {
+  // code to update an employee's role
+  userPrompt();
+}
+
+userPrompt();
